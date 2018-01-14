@@ -36,47 +36,6 @@ class device_tool:
     def mkdir(path):
         os.system("adb shell mkdir  " + path)
         
-
-def detector_person(filename):
-    img = cv2.imread(filename,0)
-    template = cv2.imread("obj.png",0)  
-    w,h = template.shape[::-1]
-  
-    method = eval('cv2.TM_CCOEFF')  
-    res = cv2.matchTemplate(img,template,method)
-
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)  
-    top_left = max_loc  
-    bottom_right = (top_left[0] + w, top_left[1] + h)
-
-    # img = cv2.imread(filename,3)
-    # cv2.rectangle(img,top_left, bottom_right, 255, 2)
-
-    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    # plt.imshow(img)
-    # plt.show()
-    return  top_left, bottom_right;
-
-def canny(filename):
-    image = cv2.imread(filename)  
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    h,s,v = cv2.split(image)
-    gray = h
-  
-    canny = cv2.Canny(gray, 5, 15)  
-    thresh = cv2.threshold(canny, 10, 255, cv2.THRESH_BINARY)[1]
-
-     # 扩展阀值图像填充孔洞，然后找到阀值图像上的轮廓
-    _, cnts, hierarchy = cv2.findContours( thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # show contours
-    cv2.drawContours(image, cnts, -1, 255, 2) 
-
-    image = cv2.cvtColor(image, cv2.COLOR_HSV2RGB)
-    #plt.imshow(canny, cmap = plt.cm.gray)
-    plt.imshow(image, cmap = plt.cm.gray)
-    plt.show()
-
-
 class detecter:
     templatefilename = None
     template = None
@@ -87,7 +46,7 @@ class detecter:
         self.template = cv2.imread(templatefilename, 0)  
         self.width,self.height = self.template.shape[::-1]
 
-    def detector_person(self, gray):
+    def detect_person(self, gray):
         method = eval('cv2.TM_CCOEFF')  
         res = cv2.matchTemplate(gray,self.template,method)
 
@@ -97,7 +56,7 @@ class detecter:
 
         return  top_left, bottom_right
 
-    def detector_next_position(self, image, top, bottom):
+    def detect_next_position(self, image, top, bottom):
         image2 = image.copy()
         image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2HSV)
         h,s,v = cv2.split(image2)
@@ -105,9 +64,9 @@ class detecter:
         canny |= cv2.Canny(s, 5, 5)  
         canny |= cv2.Canny(v, 5, 5)  
         thresh = cv2.threshold(canny, 0, 255, cv2.THRESH_BINARY)[1]
-        thresh[top[1]:bottom[1],top[0] : bottom[0]] = 0
-        # 扩展阀值图像填充孔洞，然后找到阀值图像上的轮廓
+        thresh[top[1]:bottom[1], top[0]:bottom[0]] = 0
         _, cnts, hierarchy = cv2.findContours( thresh.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
         # find contour
         dest_cnt = None
         dest_pos = None
@@ -174,9 +133,9 @@ class detecter:
         image = cv2.imread(filename)  
         
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        top, bottom = self.detector_person(gray)
+        top, bottom = self.detect_person(gray)
 
-        cnt, pos_t = self.detector_next_position(image,top, bottom)
+        cnt, pos_t = self.detect_next_position(image,top, bottom)
         pos_s = self.get_person_pos(top, bottom)
         pos_e = self.get_position_center(pos_s, pos_t)
         self.show_results(image, cnt, top, bottom, pos_s, pos_e, pos_t, count)
@@ -197,9 +156,5 @@ def jump():
         device_tool.press_screen(t)
         time.sleep(random.uniform(1.5, 2.5))
         
-        # exit = input('input a q to quit!')
-        # if exit == "q":
-        #     break
-
-jump()
-#canny("data/126.png")
+if __name__ == "__main__":
+    jump()
