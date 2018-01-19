@@ -19,7 +19,11 @@ import random
 class device_tool:
     @staticmethod
     def press_screen(time):
-        os.system("adb shell input swipe 250 250 250 250 " + str(time))
+        r1 = random.uniform(0, 20)
+        r2 = random.uniform(0, 20)
+        r3 = random.uniform(0, 20)
+        r4 = random.uniform(0, 20)
+        os.system("adb shell input swipe " + str(1000 + int(r1)) + " " + str(1000 + int(r2)) + " " + str(1000 + int(r3)) + " " + str(1000 + int(r4)) + " " + str(time))
     @staticmethod
     def click(x, y):
         os.system("adb shell input  tap " + str(x) + " " + str(y))
